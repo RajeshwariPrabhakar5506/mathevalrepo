@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teacher Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen flex flex-col items-center p-8">
+
+  <h1 class="text-4xl font-extrabold text-indigo-800 mb-6 text-center drop-shadow">📊 Student Performance by Domain</h1>
+
+  <!-- Domain Buttons -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+    {% for dom in DOMAINS %}
+      <button 
+        onclick="loadData('{{ dom }}')" 
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-all duration-300"
+      >
+        {{ dom.title() }}
+      </button>
+    {% endfor %}
+  </div>
+
+  <!-- Report Button -->
+  <button onclick="loadReport()" class="report-button bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-xl shadow-md mb-6">
+    📄 Report
+  </button>
+
+  <!-- Chart Section -->
+  <div class="w-full max-w-5xl bg-white p-8 rounded-2xl shadow-2xl border border-indigo-200 mb-8">
+    <canvas id="chart" height="100"></canvas>
+  </div>
+
+  <!-- Student Report Table -->
+  <div id="reportSection" class="w-full max-w-6xl bg-white p-6 rounded-xl shadow-xl hidden">
+    <h2 class="text-2xl font-bold text-indigo-700 mb-4">📋 Student Report</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm" id="reportTable">
+        <thead class="bg-indigo-100 text-indigo-800">
+          <tr>
+            <th class="px-4 py-2 border">Name</th>
+            <th class="px-4 py-2 border">Roll Number</th>
+            <th class="px-4 py-2 border">School Code</th>
+            <th class="px-4 py-2 border">Domain</th>
+            <th class="px-4 py-2 border">Score</th>
+            <th class="px-4 py-2 border">Total</th>
+            <th class="px-4 py-2 border">Accuracy (%)</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700" id="reportBody">
+          <!-- Rows will be inserted dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <button onclick="downloadPDF()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-md">
+      ⬇️ Download PDF
+    </button>
+  </div>
+
+  <script>
+    async function loadData(domain) {
+      const res = await fetch('/get-domain-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain })
+      });
+
+      const data = await res.json();
+      const labels = data.map(d => d.student);
+      const values = data.map(d => d.accuracy);
+
+      const ctx = document.getElementById('chart').getContext('2d');
+      if (window.myChart) window.myChart.destroy();
+
+      window.myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Accuracy (%)',
+            data: values,
+            backgroundColor: 'rgba(99, 102, 241, 0.7)',
+            borderRadius: 6,
+            hoverBackgroundColor: 'rgba(67, 56, 202, 0.8)',
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: 'Accuracy (%)',
+                color: '#4B5563',
+                font: { size: 14 }
+              },
+              ticks: {
+                stepSize: 10,
+                color: '#4B5563',
+                font: { size: 12 }
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Students',
+                color: '#4B5563',
+                font: { size: 14 }
+              },
+              ticks: {
+                color: '#4B5563',
+                font: { size: 12 }
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              labels: {
+                color: '#4B5563',
+                font: { size: 13 }
+              }
+            },
+            title: {
+              display: true,
+              text: `Performance in ${domain.charAt(0).toUpperCase() + domain.slice(1)}`,
+              color: '#1E3A8A',
+              font: { size: 18, weight: 'bold' },
+              padding: { bottom: 20 }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return `${context.parsed.y}% correct`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    async function loadReport() {
+      const res = await fetch('/get-report-data');
+      const data = await res.json();
+
+      const tbody = document.getElementById("reportBody");
+      tbody.innerHTML = "";
+
+      data.forEach(student => {
+        const row = `
+          <tr>
+            <td class="border px-4 py-2">${student.name}</td>
+            <td class="border px-4 py-2">${student.roll}</td>
+            <td class="border px-4 py-2">${student.school_code}</td>
+            <td class="border px-4 py-2">${student.domain}</td>
+            <td class="border px-4 py-2">${student.score}</td>
+            <td class="border px-4 py-2">${student.total}</td>
+            <td class="border px-4 py-2">${student.accuracy}</td>
+          </tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+      });
+
+      document.getElementById("reportSection").classList.remove("hidden");
+    }
+
+    function downloadPDF() {
+      const element = document.getElementById("reportSection");
+
+      // Ensure report is visible
+      if (element.classList.contains("hidden")) {
+        alert("Please generate the report first.");
+        return;
+      }
+
+      // Delay to ensure table is rendered
+      setTimeout(() => {
+        const opt = {
+          margin: 0.5,
+          filename: 'student_report.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        html2pdf().from(element).set(opt).save();
+      }, 300);
+    }
+  </script>
+
+</body>
+</html>

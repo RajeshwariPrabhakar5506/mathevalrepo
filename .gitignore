@@ -1,0 +1,12 @@
+.env
+matheval-467514-ebc49d1931ce.json
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+node_modules/
+venv/
+.idea/
+.DS_Store
+*.json

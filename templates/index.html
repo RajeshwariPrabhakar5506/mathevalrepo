@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en">
+<head><meta charset="UTF-8"/><title>MathEval</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-blue-100 min-h-screen flex items-center justify-center">
+  <div class="max-w-md bg-white p-8 rounded-xl shadow-lg text-center space-y-6">
+    <h1 class="text-3xl font-bold text-indigo-600">Welcome to MathEval</h1>
+    <button onclick="show('student')" class="w-full bg-green-500 text-white py-2 rounded-lg">👩‍🎓 Student</button>
+    <button onclick="show('teacher')" class="w-full bg-yellow-500 text-white py-2 rounded-lg">👨‍🏫 Teacher</button>
+
+    <form id="student" class="mt-6 hidden space-y-4" action="/start-quiz" method="post" onsubmit="storeStudent()">
+      <input name="name" type="text" placeholder="Name" required class="border p-2 w-full"/>
+      <input name="roll" type="text" placeholder="Roll Number" required class="border p-2 w-full"/>
+      <input name="school_code" type="text" placeholder="School Code" required class="border p-2 w-full"/>
+      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg">Start Quiz</button>
+    </form>
+
+    <form id="teacher" class="mt-6 hidden space-y-4" action="/teacher-login" method="post">
+      <input name="email" type="email" placeholder="Email" required class="border p-2 w-full"/>
+      <input name="password" type="password" placeholder="Password" required class="border p-2 w-full"/>
+      <input name="school_code" type="text" placeholder="School Code" required class="border p-2 w-full"/>
+      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg">Login</button>
+    </form>
+  </div>
+
+  <script>
+    function show(id){
+      document.getElementById('student').classList.toggle('hidden', id!=='student');
+      document.getElementById('teacher').classList.toggle('hidden', id!=='teacher');
+    }
+    function storeStudent(){/* values auto posted by form*/}
+  </script>
+</body></html>

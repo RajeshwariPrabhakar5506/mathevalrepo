@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100 min-h-screen p-6 font-sans">
+
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-2xl">
+    <h1 class="text-4xl font-extrabold text-green-700 text-center mb-4">🎉 Quiz Results 🎉</h1>
+
+    <div class="text-center text-gray-700 mb-6">
+      <p class="text-lg">👤 <strong>{{ student.name }}</strong> | 🆔 <strong>{{ student.roll }}</strong></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-8">
+      <div class="bg-green-100 p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-gray-700">📋 Total Questions</h2>
+        <p class="text-2xl font-bold text-indigo-700 mt-2">{{ result.total }}</p>
+      </div>
+      <div class="bg-green-100 p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-gray-700">✅ Correct</h2>
+        <p class="text-2xl font-bold text-green-600 mt-2">{{ result.correct }}</p>
+      </div>
+      <div class="bg-green-100 p-4 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-gray-700">❌ Incorrect</h2>
+        <p class="text-2xl font-bold text-red-600 mt-2">{{ result.incorrect }}</p>
+      </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-green-700 mb-4">📚 Domain-wise Performance</h2>
+    <div class="space-y-3 mb-8">
+      {% for dom, stat in result.domains.items() %}
+        <div class="flex justify-between bg-gray-50 px-4 py-3 rounded-lg shadow">
+          <span class="font-medium">{{ dom.title() }}</span>
+          <span class="font-semibold text-green-600">{{ stat.correct }}/{{ stat.total }} Correct</span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <h2 class="text-2xl font-bold text-green-700 mb-4">📖 Question Review</h2>
+    <div class="space-y-4">
+      {% for ans in result.answers %}
+        <div class="p-4 rounded-lg shadow-md {{ ans.is_correct and 'bg-green-50' or 'bg-red-50' }}">
+          <p class="mb-2"><strong>Q:</strong> {{ ans.question }}</p>
+          <p>
+            Your answer:
+            <span class="font-semibold {{ ans.is_correct and 'text-green-700' or 'text-red-700' }}">
+              {{ ans.your_answer }}
+              {{ ans.is_correct and '✅' or '❌' }}
+            </span>
+          </p>
+          {% if not ans.is_correct %}
+            <p class="text-gray-700">Correct answer: <strong>{{ ans.correct_answer }}</strong></p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-8 text-center">
+      <a href="/" class="inline-block bg-indigo-600 text-white text-lg px-6 py-3 rounded-full hover:bg-indigo-700 transition">🔁 Take Another Quiz</a>
+    </div>
+  </div>
+
+</body>
+</html>
