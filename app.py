@@ -1,15 +1,13 @@
 from flask import Flask, render_template, request, redirect, session, jsonify, url_for
-import random, os
+import random, os, json
 from datetime import datetime
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import json
 import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 
 load_dotenv()
-#timestamp, name, roll, school_code, domain, question_index, question, student_answer, correct_answer, status
 
 app = Flask(__name__)
 app.secret_key = '9b8f8943da62f50e4ef49a242ed05ee0'
@@ -32,13 +30,10 @@ def load_questions():
 question_data = load_questions()
 
 # --- Google Sheets setup ---
-creds_info = "/etc/secrets/creds.json"
-
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds_info = os.getenv("GOOGLE_CREDS_PATH")
 
-# ✅ Load credentials directly from the file for local development
-
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name(creds_info, scope)
 client = gspread.authorize(creds)
 sheet = client.open("matheval").sheet1
 
@@ -173,9 +168,11 @@ def get_domain_data():
             if r.get('status') == 'Correct':
                 scores[key]['correct'] += 1
 
-    return jsonify([{'student': s, 'accuracy': round(v['correct'] / v['total'] * 100, 2)} for s, v in scores.items() if v['total'] > 0])
+    return jsonify([
+        {'student': s, 'accuracy': round(v['correct'] / v['total'] * 100, 2)}
+        for s, v in scores.items() if v['total'] > 0
+    ])
 
-# ✅ Report JSON data for PDF export
 @app.route('/get-report-data')
 def get_report_data():
     school_code = session.get('teacher', {}).get('school_code', '')
