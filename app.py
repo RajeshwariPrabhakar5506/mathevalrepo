@@ -16,15 +16,45 @@ app.secret_key = '9b8f8943da62f50e4ef49a242ed05ee0'
 DOMAINS = ['algebra', 'arithmetic', 'graphs', 'patterns']
 QUESTION_DIR = 'questions'
 
+import os
+import json
+import random
+
+DOMAINS = ['algebra', 'arithmetic', 'graphs', 'patterns']
+
 def load_questions():
     bank = {}
     for domain in DOMAINS:
-        all_questions=json.loads(os.environ['algebra'])
-        selected = random.sample(all_questions, min(5, len(all_questions)))
-        bank[domain] = selected            
+        try:
+            if domain == 'algebra':
+                all_questions = json.loads(os.environ['algebra'])
+                selected = random.sample(all_questions, min(5, len(all_questions)))
+                bank[domain] = selected
+
+            elif domain == 'arithmetic':
+                all_questions = json.loads(os.environ['arithmetic'])
+                selected = random.sample(all_questions, min(5, len(all_questions)))
+                bank[domain] = selected
+
+            elif domain == 'graphs':
+                all_questions = json.loads(os.environ['graphs'])
+                selected = random.sample(all_questions, min(5, len(all_questions)))
+                bank[domain] = selected
+
+            elif domain == 'patterns':
+                all_questions = json.loads(os.environ['patterns'])
+                selected = random.sample(all_questions, min(5, len(all_questions)))
+                bank[domain] = selected
+
+        except Exception as e:
+            print(f"Error loading domain '{domain}': {e}")
+            bank[domain] = []
+
     return bank
 
 question_data = load_questions()
+
+
 
 # --- Google Sheets setup ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
