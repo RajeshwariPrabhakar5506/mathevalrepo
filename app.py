@@ -35,6 +35,7 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 #Load credentials directly from the JSON string in the env var
 creds_info = json.loads(os.environ['GOOGLE_CREDS_PATH'])
 
+
 # ✅ Create credentials from dictionary
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
 
