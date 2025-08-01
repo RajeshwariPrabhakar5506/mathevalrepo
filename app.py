@@ -33,7 +33,7 @@ question_data = load_questions()
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 #Load credentials directly from the JSON string in the env var
-creds_info = json.loads(os.environ['GOOGLE_APPLICATION_CREDENTIALS_JSON'])
+creds_info = json.loads(os.environ['GOOGLE_CREDS_PATH'])
 
 # ✅ Create credentials from dictionary
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
