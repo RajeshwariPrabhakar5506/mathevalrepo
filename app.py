@@ -19,12 +19,9 @@ QUESTION_DIR = 'questions'
 def load_questions():
     bank = {}
     for domain in DOMAINS:
-        path = os.path.join(QUESTION_DIR, f"{domain}.json")
-        if os.path.exists(path):
-            with open(path, 'r', encoding='utf-8') as f:
-                all_questions = json.load(f)
-                selected = random.sample(all_questions, min(5, len(all_questions)))
-                bank[domain] = selected
+        all_questions=json.loads(os.environ['algebra'])
+        selected = random.sample(all_questions, min(5, len(all_questions)))
+        bank[domain] = selected            
     return bank
 
 question_data = load_questions()
