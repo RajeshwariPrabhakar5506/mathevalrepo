@@ -31,7 +31,12 @@ question_data = load_questions()
 
 # --- Google Sheets setup ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds_info = os.getenv("GOOGLE_CREDS_PATH")
+
+creds_path = os.getenv("GOOGLE_CREDS_PATH")  # Make sure this env var is set to /etc/secrets/creds.json
+
+# ✅ Load the JSON content as a dictionary
+with open(creds_path) as f:
+    creds_info = json.load(f)
 
 creds = ServiceAccountCredentials.from_json_keyfile_name(creds_info, scope)
 client = gspread.authorize(creds)
