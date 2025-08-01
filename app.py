@@ -6,10 +6,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 import json
 import pandas as pd
 import numpy as np
-import dotenv
-import os 
+from dotenv import load_dotenv
 
-dotenv.load_dotenv()
+load_dotenv()
+#timestamp, name, roll, school_code, domain, question_index, question, student_answer, correct_answer, status
 
 app = Flask(__name__)
 app.secret_key = '9b8f8943da62f50e4ef49a242ed05ee0'
@@ -32,13 +32,13 @@ def load_questions():
 question_data = load_questions()
 
 # --- Google Sheets setup ---
+creds_info = "/etc/secrets/creds.json"
+
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-from dotenv import load_dotenv
-load_dotenv()
 
-creds_path = os.getenv("GOOGLE_CREDS_FILE")
-creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
+# ✅ Load credentials directly from the file for local development
 
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_info, scope)
 client = gspread.authorize(creds)
 sheet = client.open("matheval").sheet1
 
@@ -83,7 +83,7 @@ def get_questions():
 @app.route('/submit-quiz', methods=['POST'])
 def submit_quiz():
     form = request.form
-    result = {'total':0, 'correct':0, 'incorrect':0, 'domains':{}, 'answers':[]}
+    result = {'total': 0, 'correct': 0, 'incorrect': 0, 'domains': {}, 'answers': []}
 
     for key in form:
         if key.startswith("answer_"):
@@ -101,7 +101,7 @@ def submit_quiz():
             result['answers'].append(entry)
 
             result['total'] += 1
-            d = result['domains'].setdefault(domain, {'total':0,'correct':0,'incorrect':0})
+            d = result['domains'].setdefault(domain, {'total': 0, 'correct': 0, 'incorrect': 0})
             d['total'] += 1
             if entry['is_correct']:
                 result['correct'] += 1
@@ -173,7 +173,7 @@ def get_domain_data():
             if r.get('status') == 'Correct':
                 scores[key]['correct'] += 1
 
-    return jsonify([{'student': s, 'accuracy': round(v['correct']/v['total']*100,2)} for s, v in scores.items() if v['total'] > 0])
+    return jsonify([{'student': s, 'accuracy': round(v['correct'] / v['total'] * 100, 2)} for s, v in scores.items() if v['total'] > 0])
 
 # ✅ Report JSON data for PDF export
 @app.route('/get-report-data')
